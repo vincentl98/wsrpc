@@ -7,6 +7,14 @@ import websockets
 from wsrpc.service_api import ServiceApi
 
 
+class InvalidArgumentsLengthError(Exception):
+    pass
+
+
+class InvalidFunctionError(Exception):
+    pass
+
+
 class Service:
 
     def __init__(self, service_api: ServiceApi) -> None:
@@ -15,24 +23,32 @@ class Service:
 
     async def ws_handler(self, ws: websockets.WebSocketServerProtocol, path: str):
         async for message in ws:
-
             fn_name, args = pickle.loads(message)
 
-            fn = self._service_api.ref(fn_name)
+            if self._service_api.has_fn(fn_name):
+                fn = self._service_api.ref(fn_name)
 
-            if args is None:
-                args = []
+                if args is None:
+                    args = []
 
-            signature = inspect.signature(fn)
-            assert len(args) == len(signature.parameters)
+                signature = inspect.signature(fn)
 
-            try:
-                value = fn(*args)
-                ok = True
-            except Exception as e:
-                value = e
+                if len(args) == len(signature.parameters):
+                    try:
+                        if inspect.iscoroutinefunction(fn):
+                            value = await fn(*args)
+                        else:
+                            value = fn(*args)
+                        ok = True
+                    except Exception as e:
+                        value = e
+                        ok = False
+                else:
+                    value = InvalidArgumentsLengthError()
+                    ok = False
+            else:
+                value = InvalidFunctionError()
                 ok = False
-
             await ws.send(pickle.dumps((ok, value)))
 
     async def open(self) -> None:

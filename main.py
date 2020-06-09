@@ -1,15 +1,19 @@
 import asyncio
+from dataclasses import dataclass
 
-import calculation
+import user_manager
+from user import User
 
 
 async def main():
-    hello_world = await calculation.api.run(calculation.hello)
-    print(f"{hello_world}")
-    result = await calculation.api.run(calculation.add, (2, 3))
-    print(f"2 + 3 = {result} ")
-    echo = await calculation.api.run(calculation.echo, ("Echo !",))
-    print(f"{echo}")
+    await user_manager.api.add_user("vincent", "mdp")
+    print("ok")
+    # try:
+    #     vincent = await user_manager.api.add_user("vincent")
+    #
+    #     print(vincent)
+    # except NotFoundError as e:
+    #     pass
 
 
 if __name__ == "__main__":

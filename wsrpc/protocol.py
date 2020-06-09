@@ -7,8 +7,6 @@ Data = websockets.Data
 Message = Union[Data, Iterable[Data], AsyncIterable[Data]]
 
 CONNECTION_ERRORS = (OSError, ConnectionRefusedError, ConnectionAbortedError)
-PROTOCOL_ERRORS = (websockets.InvalidURI, websockets.InvalidHandshake)
-CHANNEL_ERRORS = (*CONNECTION_ERRORS, *PROTOCOL_ERRORS)
 
 
 async def send_retry(uri: str, message: Message, retry_interval: float = 0.1, max_tries: int = 3) -> None:
@@ -25,5 +23,11 @@ async def send(uri: str, message: Message) -> bool:
         async with websockets.connect(uri) as ws:
             await ws.send(message)
         return True
-    except CHANNEL_ERRORS:
+    except CONNECTION_ERRORS:
         return False
+    except websockets.InvalidHandshake:
+        try:
+            await send_retry(uri, message)
+            return True
+        except ConnectionError:
+            return False
