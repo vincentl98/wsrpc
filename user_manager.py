@@ -3,22 +3,23 @@ from asyncio import Future
 from typing import Callable, Optional
 
 from user import User
-from wsrpc import service_api
-from wsrpc.service import Service
-from wsrpc.service_api import ServiceApi, rpc
+from wsrpc.service import Service, rpc
 
 users = []
 
-api = service_api.ServiceApi("localhost", 6789)
+service = Service("localhost", 6789)
 
 
-@rpc(api)
-def add_user(username: str, password: str) -> None:
-    print(f"added user {username} {password}")
-    users.append(User(username, password))
+@rpc(service)
+async def add_user(username: str, password: str = "abcd") -> None:
+    if await has_user(username):
+        raise Exception(f"User already exists: {username}")
+    else:
+        print(f"added user {username} {password}")
+        users.append(User(username, password))
 
 
-@rpc(api)
+@rpc(service)
 def get_user_by_username(username: str) -> User:
     for user in users:
         if user.username == username:
@@ -26,20 +27,28 @@ def get_user_by_username(username: str) -> User:
     raise Exception()
 
 
-@rpc(api)
+@rpc(service)
+async def has_user(username: str) -> bool:
+    for user in users:
+        if user.username == username:
+            return True
+    return False
+
+
+@rpc(service)
 def remove_user(username: str) -> None:
     user = get_user_by_username(username)
     users.remove(user)
 
 
-@rpc(api)
+@rpc(service)
 def update_username(old_username: str, new_username: str) -> None:
     user = get_user_by_username(old_username)
     user.username = new_username
 
 
 async def main():
-    await Service(api).open()
+    await service.open()
     await Future()
 
 

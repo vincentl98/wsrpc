@@ -6,7 +6,8 @@ from user import User
 
 
 async def main():
-    await user_manager.api.add_user("vincent", "mdp")
+    await user_manager.add_user("vincent")
+    await user_manager.add_user("vincent")
     print("ok")
     # try:
     #     vincent = await user_manager.api.add_user("vincent")
