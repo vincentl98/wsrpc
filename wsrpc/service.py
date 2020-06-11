@@ -1,8 +1,8 @@
-import asyncio
 import inspect
 import pickle
+from typing import Dict, Callable, Optional, Any
+
 import websockets
-from typing import Dict, Type, Callable, Optional, Sequence, Any, Union, Tuple
 
 
 class Service:
@@ -38,14 +38,14 @@ class Service:
 
             await ws.send(pickle.dumps((ok, value)))
 
-    async def open(self) -> None:
+    async def start(self) -> None:
         assert self._server is None
         self._server = await websockets.serve(self._ws_handler, host=self._host,
                                               port=self._port)
 
-    async def close(self) -> None:
+    async def stop(self) -> None:
         assert self._server is not None
-        self._server.close()
+        self._server.stop()
         await self._server.wait_closed()
         self._server = None
 
@@ -57,6 +57,11 @@ class Service:
 
     def _root_uri(self) -> str:
         return f"ws://{self._host}:{self._port}"
+
+    def call_local_fn(self, fn_name: str, *args, **kwargs) -> Any:
+        assert fn_name in self._functions
+
+        return self._functions[fn_name](*args, **kwargs)
 
     async def call_remote_fn(self, fn_name: str, *args, **kwargs) -> Any:
         assert fn_name in self._functions
@@ -71,23 +76,3 @@ class Service:
                 raise result
             else:
                 return result
-
-
-def rpc(service_api: Service):
-    def inner(fn: Callable):
-        fn_name = fn.__name__
-
-        if not inspect.iscoroutinefunction(fn):
-            raise Exception(f"Function is not async: {fn_name}")
-
-        async def decide_and_call(*args, _rpc=True, **kwargs) -> Any:
-
-            if not _rpc:
-                return await fn(*args, **kwargs)
-            else:
-                return await service_api.call_remote_fn(fn_name, *args, **kwargs)
-
-        service_api.register_rpc(decide_and_call, fn_name=fn.__name__)
-        return decide_and_call
-
-    return inner
