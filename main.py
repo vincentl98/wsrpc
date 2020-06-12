@@ -1,13 +1,11 @@
 import asyncio
-from dataclasses import dataclass
-
 import user_manager
-from user import User
 
 
 async def main():
+    if not await user_manager.has()
     # await user_manager.add_user("vincent")
-    vincent = await user_manager.get_user_by_username("vincent")
+    vincent = await user_manager.get("vincent")
     print(vincent)
     # try:
     #     vincent = await user_manager.api.add_user("vincent")

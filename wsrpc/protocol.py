@@ -11,7 +11,7 @@ CONNECTION_ERRORS = (OSError, ConnectionRefusedError, ConnectionAbortedError)
 
 async def send_retry(uri: str, message: Message, retry_interval: float = 0.1, max_tries: int = 3) -> None:
     if max_tries == 0:
-        raise ConnectionError()
+        raise ConnectionError(f"Message sending to {uri} failed (no attempt left).")
     ok = await send(uri, message)
     if not ok:
         await asyncio.sleep(retry_interval)

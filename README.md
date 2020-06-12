@@ -39,7 +39,7 @@ import user_manager
 
 username = input()
 
-await user_manager.add_user((username, "password")) # remote call
+await user_manager.add((username, "password")) # remote call
 user = await user_manager.get_user(username) # also remote call
 ```
 
@@ -130,7 +130,7 @@ import user_manager
 username = input()
 
 if user_manager.check_username_length(username): # local call
-    await user_manager.add_user((username, "password")) # remote call
+    await user_manager.add((username, "password")) # remote call
     user = await user_manager.get_user(username) # also remote call
 ```
 

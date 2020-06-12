@@ -1,4 +1,6 @@
 import inspect
+import pathlib
+import ssl
 import pickle
 from typing import Dict, Callable, Optional, Any
 
@@ -7,17 +9,20 @@ import websockets
 
 class Service:
 
-    def __init__(self, host: str, port: int) -> None:
+    def __init__(self, host: str, port: int, ssl_certificate_filename: Optional[str] = None) -> None:
         self._host = host
         self._port = port
         self._functions: Dict[str, Callable] = dict()
         self._server: Optional[websockets.WebSocketServer] = None
+        self._ssl_certificate_path = ssl_certificate_filename
 
     async def _ws_handler(self, ws: websockets.WebSocketServerProtocol, path: str):
         async for message in ws:
             fn_name, args, kwargs = pickle.loads(message)
 
-            assert fn_name in self._functions
+            assert fn_name in self._functions, f"Function {fn_name} cannot be called because it is not registered. Try " \
+                                               f"using rpc decorator."
+
             fn = self._functions[fn_name]
 
             if args is None:
@@ -28,9 +33,9 @@ class Service:
 
             try:
                 if inspect.iscoroutinefunction(fn):
-                    value = await fn(*args, _rpc=False, **kwargs)
+                    value = await fn(*args, _wsrpc_is_remote_call=False, **kwargs)
                 else:
-                    value = fn(*args, _rpc=False, **kwargs)
+                    value = fn(*args, _wsrpc_is_remote_call=False, **kwargs)
                 ok = True
             except Exception as e:
                 value = e
@@ -38,13 +43,21 @@ class Service:
 
             await ws.send(pickle.dumps((ok, value)))
 
+    def is_started(self) -> bool:
+        return self._server is not None
+
     async def start(self) -> None:
-        assert self._server is None
+        assert not self.is_started()
+        if self._ssl_certificate_path is not None:
+            ssl_context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
+            ssl_context.load_cert_chain(self._ssl_certificate_path)
+        else:
+            ssl_context = None
         self._server = await websockets.serve(self._ws_handler, host=self._host,
-                                              port=self._port)
+                                              port=self._port, ssl=ssl_context)
 
     async def stop(self) -> None:
-        assert self._server is not None
+        assert self.is_started()
         self._server.stop()
         await self._server.wait_closed()
         self._server = None
@@ -52,11 +65,15 @@ class Service:
     def register_rpc(self, fn: Callable, fn_name: Optional[str] = None) -> None:
         if fn_name is None:
             fn_name = fn.__name__
-        assert fn_name not in self._functions.keys(), f"\"{fn_name}\" is already registered."
+        assert fn_name not in self._functions.keys(), f"Cannot register function {fn_name} because another function" \
+                                                      f"having the same name is already registered."
         self._functions[fn_name] = fn
 
     def _root_uri(self) -> str:
-        return f"ws://{self._host}:{self._port}"
+        if self._ssl_certificate_path is not None:
+            return f"wss://{self._host}:{self._port}"
+        else:
+            return f"ws://{self._host}:{self._port}"
 
     def call_local_fn(self, fn_name: str, *args, **kwargs) -> Any:
         assert fn_name in self._functions
@@ -66,12 +83,24 @@ class Service:
     async def call_remote_fn(self, fn_name: str, *args, **kwargs) -> Any:
         assert fn_name in self._functions
 
-        async with websockets.connect(self._root_uri()) as ws:
+        if self._ssl_certificate_path is not None:
+            ssl_context = ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT)
+            ssl_context.load_verify_locations(self._ssl_certificate_path)
+        else:
+            ssl_context = None
+
+        async with websockets.connect(self._root_uri(), ssl=ssl_context) as ws:
             serialized_args = pickle.dumps((fn_name, args, kwargs))
             await ws.send(serialized_args)
             message = await ws.recv()
-            ok, result = pickle.loads(message)
-
+            try:
+                ok, result = pickle.loads(message)
+            except AttributeError as e:
+                raise AttributeError("This error is likely due to different class names during "
+                                     "serialization and deserialization of function remote call response. "
+                                     "Check that the imports and names are identical in the function definition "
+                                     "context and in the function call context. For more information, "
+                                     "check Pickle's documentation.") from e
             if not ok:
                 raise result
             else:
