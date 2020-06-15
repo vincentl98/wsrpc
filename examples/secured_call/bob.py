@@ -1,4 +1,5 @@
 import asyncio
+import tensorflow as tf
 from asyncio import Future
 
 from wsrpc import rpc, Service
@@ -10,7 +11,7 @@ trusted_tokens = ["alice_token_123"]  # This is just an illustration. Tokens sho
 
 
 @rpc(service)
-async def print_message(message: str, token: str = None) -> None:
+async def print_message(message: tf.Tensor, token: str = None) -> None:
     if token is None or token not in trusted_tokens:
         from examples.secured_call.exceptions import InvalidTokenError
         raise InvalidTokenError()

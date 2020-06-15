@@ -16,12 +16,10 @@ if __name__ == "__main__":
 
 @rpc(service)
 async def encrypted_value() -> int:
-    global a, r
     return a - r
 
 
 async def main():
-    global r
     await service.start()
     await stephanie.set_r(r)
     await Future()
