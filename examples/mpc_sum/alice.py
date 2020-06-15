@@ -1,21 +1,22 @@
 import asyncio
+import random
 from asyncio import Future
-from random import random
 
-from wsrpc.decorators import rpc
-from wsrpc.service import Service
+from wsrpc import rpc, Service
 
 import examples.mpc_sum.stephanie as stephanie
 
 service = Service("localhost", 6789)
 
-a = 100
-r = random.randint(0, 100)
-print(f"Random number r is set to {r}.")
+if __name__ == "__main__":
+    a = 100
+    r = random.randint(0, 100)
+    print(f"Random number r is set to {r}.")
 
 
 @rpc(service)
 async def encrypted_value() -> int:
+    global a, r
     return a - r
 
 

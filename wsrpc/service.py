@@ -1,7 +1,6 @@
 import inspect
-import pathlib
+import dill
 import ssl
-import pickle
 from typing import Dict, Callable, Optional, Any
 
 import websockets
@@ -17,11 +16,12 @@ class Service:
         self._ssl_certificate_path = ssl_certificate_filename
 
     async def _ws_handler(self, ws: websockets.WebSocketServerProtocol, path: str):
-        async for message in ws:
-            fn_name, args, kwargs = pickle.loads(message)
 
-            assert fn_name in self._functions, f"Function {fn_name} cannot be called because it is not registered. Try " \
-                                               f"using rpc decorator."
+        async for message in ws:
+            fn_name, args, kwargs = dill.loads(message)
+
+            assert fn_name in self._functions, f"Function {fn_name} cannot be called because it is not registered. " \
+                                               f"Try using @rpc decorator."
 
             fn = self._functions[fn_name]
 
@@ -41,7 +41,7 @@ class Service:
                 value = e
                 ok = False
 
-            await ws.send(pickle.dumps((ok, value)))
+            await ws.send(dill.dumps((ok, value), byref=True))
 
     def is_started(self) -> bool:
         return self._server is not None
@@ -90,17 +90,17 @@ class Service:
             ssl_context = None
 
         async with websockets.connect(self._root_uri(), ssl=ssl_context) as ws:
-            serialized_args = pickle.dumps((fn_name, args, kwargs))
+            serialized_args = dill.dumps((fn_name, args, kwargs), byref=True)
             await ws.send(serialized_args)
             message = await ws.recv()
             try:
-                ok, result = pickle.loads(message)
+                ok, result = dill.loads(message)
             except AttributeError as e:
                 raise AttributeError("This error is likely due to different class names during "
                                      "serialization and deserialization of function remote call response. "
                                      "Check that the imports and names are identical in the function definition "
                                      "context and in the function call context. For more information, "
-                                     "check Pickle's documentation.") from e
+                                     "check Dill's documentation.") from e
             if not ok:
                 raise result
             else:

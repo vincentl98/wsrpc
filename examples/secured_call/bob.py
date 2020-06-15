@@ -1,17 +1,10 @@
 import asyncio
 from asyncio import Future
 
-from wsrpc.decorators import rpc
-from wsrpc.service import Service
+from wsrpc import rpc, Service
 
 service = Service("localhost", 6790,
                   ssl_certificate_filename="localhost.pem")
-
-
-class InvalidTokenError(Exception):
-    pass
-
-exports = [InvalidTokenError]
 
 trusted_tokens = ["alice_token_123"]  # This is just an illustration. Tokens should never be stored in code.
 
@@ -19,6 +12,7 @@ trusted_tokens = ["alice_token_123"]  # This is just an illustration. Tokens sho
 @rpc(service)
 async def print_message(message: str, token: str = None) -> None:
     if token is None or token not in trusted_tokens:
+        from examples.secured_call.exceptions import InvalidTokenError
         raise InvalidTokenError()
     else:
         print(f"Alice said: {message}")

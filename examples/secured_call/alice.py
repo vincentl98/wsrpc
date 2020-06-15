@@ -1,7 +1,6 @@
 import asyncio
 import examples.secured_call.bob as bob
-
-InvalidTokenError = bob.InvalidTokenError  # Needed for Pickle to properly deserialized any InvalidTokenError
+import examples.secured_call.exceptions
 
 
 async def get_and_send_message():
@@ -13,13 +12,13 @@ async def main():
     message = "Hello from Alice!"
     try:
         await bob.print_message(message)  # Will throw an error, because we're not authenticated
-    except bob.InvalidTokenError as e:
+    except examples.secured_call.exceptions.InvalidTokenError as e:
         print("Bob rejected our remote call.")
 
     try:
         await bob.print_message(message, token="alice_token_123")
         print("Bob accepted our remote call.")
-    except bob.InvalidTokenError as e:
+    except examples.secured_call.exceptions.InvalidTokenError as e:
         print("Bob rejected our remote call.")  # Should not be printed
 
 

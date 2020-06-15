@@ -1,6 +1,6 @@
 # wsrpc
 A remote function call library designed for microservices.
-Using Python, WebSocket and Pickle.
+Using Python, WebSocket and Dill.
 
 ## Sample code
 
@@ -145,6 +145,17 @@ user = await service.call_local_fn("get_user", "my_cool_username")
 ```
 
 However it is not recommended since type hints are not available.
+Alternatively, you can use a remote function call to the 
+local machine, at the expense of a local WebSocket request:
+```python
+@rpc(service)
+async def get_user(username: str):
+    ...
+
+user = await service.get_user("my_cool_username")
+```
 
 ## Notes
-- Does not support other language than Python
+- Only Python is supported
+- As Dill is being used for serialization, wsrpc has the same 
+limitations concerning custom classes. See Dill's documentation.
