@@ -3,6 +3,13 @@
 This example implements a secret sum using a random
 generated value `r`.
 
+## Running
+
+The `wsrpc` package should be added to `PYTHONPATH`.
+Alternatively, you can move the Python files of this example
+at the root of the project, and manually fix dependencies. 
+
+
 ## How it works:
 
 - Stephanie starts up first

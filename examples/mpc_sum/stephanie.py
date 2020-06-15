@@ -27,7 +27,7 @@ async def encrypted_value() -> int:
 
 
 async def main():
-    await service.start()
+    await service.start()  # Start listening for incoming remote call
     await Future()
 
 

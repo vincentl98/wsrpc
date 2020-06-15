@@ -21,7 +21,7 @@ async def encrypted_value() -> int:
 
 async def main():
     await service.start()
-    await stephanie.set_r(r)  # This is a remote call
+    await stephanie.set_r(r)  # This is a remote call to stephanie's Service
     await Future()
 
 

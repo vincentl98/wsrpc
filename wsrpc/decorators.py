@@ -17,7 +17,7 @@ def rpc(service: Service):
             else:
                 return await service.call_remote_fn(fn_name, *args, **kwargs)
 
-        service.register_rpc(decide_and_call, fn_name=fn.__name__)
+        service.register_rpc(decide_and_call, fn_name=fn_name)
         return decide_and_call
 
     return decorator
