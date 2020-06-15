@@ -3,11 +3,11 @@
 This example implements a secret sum using a random
 generated value `r`.
 
-##How it works:
+## How it works:
 
 - Stephanie starts up first
 - Alice starts up second
-- Alice calls Stephanie to set `r` value: `set_r`
+- Alice calls Stephanie to set `r` value: `set_r` function
 - Bob starts up last
 - Bob calls Alice and Stephanie to get their
 encrypted values: `await alice.encrypted_value()`

@@ -20,7 +20,6 @@ async def set_r(new_r: int) -> None:
 
 @rpc(service)
 async def encrypted_value() -> int:
-    global r, b
     if r is None:
         raise Exception("Alice is not ready yet.")
     else:
