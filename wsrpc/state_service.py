@@ -8,7 +8,7 @@ class StateService(Service):
 
         Warning: this is HIGHLY EXPERIMENTAL.
 
-        To register a function as remotely callable, use `class_rpc` decorator.
+        To register a function as remotely callable, use `rpc` decorator as follows: `@rpc`.
     """
 
     def __init__(self, host: str, port: int, ssl_certificate_filename: Optional[str] = None) -> None:

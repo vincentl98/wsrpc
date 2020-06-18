@@ -1,7 +1,7 @@
 import asyncio
 from asyncio import Future
 
-from wsrpc.decorators import class_rpc
+from wsrpc.decorators import rpc
 from wsrpc.state_service import StateService
 
 
@@ -10,7 +10,7 @@ class BobService(StateService):
     def init_state(self) -> None:
         self.messages_count = 0
 
-    @class_rpc
+    @rpc
     async def print_message(self, message: str) -> None:
         self.messages_count += 1
         print(f"Alice said: \"{message}\". Total: {self.messages_count} message(s).")

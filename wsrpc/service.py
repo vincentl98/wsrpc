@@ -8,9 +8,10 @@ import websockets
 
 class Service:
     """ A class wrapping a WebSocket server to be used for remote function call.
-    Acts both as a client and a server. To register a function as remotely callable, use `rpc` decorator.
+    Acts both as a client and a server. To register a function as remotely callable, use `rpc` decorator
+    as follows: `@rpc(service)`.
     """
-    
+
     def __init__(self, host: str, port: int, ssl_certificate_filename: Optional[str] = None) -> None:
         self._host = host
         self._port = port
@@ -24,7 +25,7 @@ class Service:
             fn_name, args, kwargs = dill.loads(message)
 
             assert fn_name in self._functions, f"Function {fn_name} cannot be called because it is not registered. " \
-                                               f"Try using @rpc decorator."
+                                               f"Try using `rpc` decorator."
 
             fn = self._functions[fn_name]
 
