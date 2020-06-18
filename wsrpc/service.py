@@ -7,7 +7,10 @@ import websockets
 
 
 class Service:
-
+    """ A class wrapping a WebSocket server to be used for remote function call.
+    Acts both as a client and a server. To register a function as remotely callable, use `rpc` decorator.
+    """
+    
     def __init__(self, host: str, port: int, ssl_certificate_filename: Optional[str] = None) -> None:
         self._host = host
         self._port = port
@@ -64,7 +67,7 @@ class Service:
         await self._server.wait_closed()
         self._server = None
 
-    def register_rpc(self, fn: Callable, fn_name: Optional[str] = None) -> None:
+    def register_fn(self, fn: Callable, fn_name: Optional[str] = None) -> None:
         if fn_name is None:
             fn_name = fn.__name__
         assert fn_name not in self._functions.keys(), f"Cannot register function {fn_name} because another function" \
@@ -83,7 +86,7 @@ class Service:
         return self._functions[fn_name](*args, **kwargs)
 
     async def call_remote_fn(self, fn_name: str, *args, **kwargs) -> Any:
-        assert fn_name in self._functions
+        assert fn_name in self._functions, f"Function {fn_name} is not registered."
 
         if self._ssl_certificate_path is not None:
             ssl_context = ssl.SSLContext(ssl.PROTOCOL_TLS_CLIENT)
