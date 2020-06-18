@@ -4,7 +4,7 @@ from asyncio import Future
 
 from wsrpc import rpc, StatelessService
 
-import examples.mpc_sum.stephanie as stephanie
+import stephanie
 
 service = StatelessService("localhost", 6789)
 

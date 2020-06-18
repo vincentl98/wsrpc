@@ -1,8 +1,6 @@
 import asyncio
-from asyncio import Future
 
-from wsrpc.decorators import rpc
-from wsrpc.service import Service
+from wsrpc import rpc, Service
 
 
 class BobService(Service):
@@ -21,7 +19,7 @@ service = BobService("localhost", 5678)
 
 async def main():
     await service.start()
-    await Future()
+    await asyncio.Future()
 
 
 if __name__ == "__main__":

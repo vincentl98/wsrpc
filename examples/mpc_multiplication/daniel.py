@@ -1,7 +1,8 @@
 import asyncio
 import random
 
-from examples.mpc_multiplication import alice, stephanie
+import alice
+import stephanie
 
 
 async def main():

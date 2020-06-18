@@ -13,7 +13,7 @@ trusted_tokens = ["alice_token_123"]  # This is just an illustration. Tokens sho
 @rpc(service)
 async def print_message(message: tf.Tensor, token: str = None) -> None:
     if token is None or token not in trusted_tokens:
-        from examples.secured_call.exceptions import InvalidTokenError
+        from exceptions import InvalidTokenError
         raise InvalidTokenError()
     else:
         print(f"Alice said: {message}")

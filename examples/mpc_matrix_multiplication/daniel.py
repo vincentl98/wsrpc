@@ -1,8 +1,8 @@
 import asyncio
 import numpy as np
 
-import examples.mpc_matrix_multiplication.alice as alice
-import examples.mpc_matrix_multiplication.stephanie as stephanie
+import alice as alice
+import stephanie as stephanie
 
 
 async def main():

@@ -1,12 +1,12 @@
 import asyncio
 from asyncio import Future
 from typing import Tuple
-
 import numpy as np
 
-import examples.mpc_matrix_multiplication.bob as bob
-import examples.mpc_matrix_multiplication.stephanie as stephanie
 from wsrpc import rpc, Service
+
+import bob
+import stephanie
 
 
 class AliceService(Service):
@@ -14,7 +14,8 @@ class AliceService(Service):
     def __init__(self):
         super().__init__("localhost", 6789)
 
-        self.matrix = np.array([[1, 2]])
+        self.matrix = np.array([[1, 2],
+                                [3, 4]])
 
         self.alpha = Future()
         self.beta = Future()

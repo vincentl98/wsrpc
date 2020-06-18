@@ -2,9 +2,10 @@ import asyncio
 import random
 from asyncio import Future
 from typing import Tuple
-
-from examples.mpc_multiplication import bob, alice
 from wsrpc import rpc, Service
+
+import alice
+import bob
 
 
 class StephanieService(Service):

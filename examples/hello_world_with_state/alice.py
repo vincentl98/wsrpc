@@ -1,12 +1,12 @@
 import asyncio
 
-from examples.hello_world_with_state.bob import service as bob_service
+import bob
 
 
 async def main():
-    await bob_service.print_message("First hello world!")
-    await bob_service.print_message("Second hello world!")
-    await bob_service.print_message("Third hello world!")
+    await bob.service.print_message("First hello world!")
+    await bob.service.print_message("Second hello world!")
+    await bob.service.print_message("Third hello world!")
 
 
 if __name__ == "__main__":

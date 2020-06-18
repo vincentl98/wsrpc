@@ -1,6 +1,6 @@
 import asyncio
 
-import examples.hello_world.bob as bob
+import bob
 
 
 async def main():

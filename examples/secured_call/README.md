@@ -6,13 +6,6 @@ service with token authentication and SSL.
 SSL authentication is automatically enabled when passing 
 `ssl_certificate_filename` to `Service` constructor. 
 
-## Running
-
-The `wsrpc` package should be added to `PYTHONPATH`.
-Alternatively, you can move the Python files of this example
-at the root of the project, and manually fix dependencies. 
-
-
 ## How to generate a self-signed certificate
 
 `openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout localhost.pem -out localhost.pem`
