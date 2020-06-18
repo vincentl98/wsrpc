@@ -1,7 +1,7 @@
 # wsrpc
 A **remote function call** library designed for ease of use.
 
-Using **Python** 3.7+, **WebSocket** (websockets 8.1+) and **Dill** 0.3.2+.
+Using **Python** (3.7+), **WebSocket** ([websockets](https://websockets.readthedocs.io/en/stable/) 8.1+) and **[dill](https://dill.readthedocs.io/en/latest/index.html)** 0.3.2+.
 ## Examples
 
 See `examples` folder.
@@ -120,6 +120,6 @@ user = await service.get_user("my_cool_username")
 ```
 
 ## Known limitations
-- Only Python is supported, type 
-- As Dill is being used for serialization, wsrpc has the same 
-limitations concerning custom classes. See Dill's documentation.
+- Only Python is supported
+- As **dill** is being used for serialization, wsrpc has the same 
+limitations concerning custom classes. See [dill documentation](https://dill.readthedocs.io/en/latest/index.html).
