@@ -13,14 +13,14 @@ Alternatively, you can move the Python files of this example
 at the root of the project, and manually fix dependencies. 
 
 
-## How to generate a self-signed certificate:
+## How to generate a self-signed certificate
 
 `openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout localhost.pem -out localhost.pem`
 
 When prompted: `Common Name (e.g. server FQDN or YOUR name):`,
 type `localhost`.
 
-## How it works:
+## How it works
 
 Note: In this example, Bob is the trusted party, and
 Alice wants to be authenticated.

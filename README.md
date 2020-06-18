@@ -1,6 +1,10 @@
 # wsrpc
-A remote function call library designed for microservices.
-Using Python, WebSocket and Dill.
+A **remote function call** library designed for ease of use.
+
+Using **Python** 3.7+, **WebSocket** (websockets 8.1+) and **Dill** 0.3.2+.
+## Examples
+
+See `examples` folder.
 
 ## Tutorial
 Let's say we want to have a user manager service, that
@@ -33,7 +37,6 @@ from wsrpc import rpc
 
 @rpc(service)
 async def add_user(user: (str, str)) -> None:
-    global users  # Needed as we modify users
     users.append(user)
 
 @rpc(service)
@@ -77,7 +80,7 @@ Finally, we can start the service:
 ```python
 async def main():
     await service.start()
-    await Future()  # never finishes
+    await Future()  # run indefinitely
 
 if __name__ == "__main__":
     asyncio.get_event_loop().run_until_complete(main())
@@ -116,7 +119,7 @@ async def get_user(username: str):
 user = await service.get_user("my_cool_username")
 ```
 
-## Notes
-- Only Python is supported
+## Known limitations
+- Only Python is supported, type 
 - As Dill is being used for serialization, wsrpc has the same 
 limitations concerning custom classes. See Dill's documentation.

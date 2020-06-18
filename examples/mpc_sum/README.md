@@ -10,7 +10,7 @@ Alternatively, you can move the Python files of this example
 at the root of the project, and manually fix dependencies. 
 
 
-## How it works:
+## How it works
 
 - Stephanie starts up first
 - Alice starts up second
