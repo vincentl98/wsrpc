@@ -1,9 +1,20 @@
+import asyncio
+import enum
 import inspect
 import dill
 import ssl
-from typing import Dict, Callable, Optional, Any
+from typing import Dict, Callable, Optional, Any, Union, Iterable, AsyncIterable
 
 import websockets
+
+Message = Union[websockets.Data, Iterable[websockets.Data], AsyncIterable[websockets.Data]]
+
+
+class RetryStrategy(enum.Enum):
+    """ Retry strategy in case of a successful connection but then a failure in sending a message. """
+    NO_RETRY = 0
+    RETRY_3_TIMES = 1
+    RETRY_INDEFINITELY = 2
 
 
 class StatelessService:
@@ -12,12 +23,17 @@ class StatelessService:
     as follows: `@rpc(service)`.
     """
 
-    def __init__(self, host: str, port: int, ssl_certificate_filename: Optional[str] = None) -> None:
+    def __init__(self,
+                 host: str,
+                 port: int,
+                 ssl_certificate_filename: Optional[str] = None,
+                 retry_strategy: RetryStrategy = RetryStrategy.RETRY_3_TIMES) -> None:
         self._host = host
         self._port = port
         self._functions: Dict[str, Callable] = dict()
         self._server: Optional[websockets.WebSocketServer] = None
         self._ssl_certificate_path = ssl_certificate_filename
+        self._retry_strategy = retry_strategy
 
     async def _ws_handler(self, ws: websockets.WebSocketServerProtocol, path: str):
 
@@ -86,6 +102,22 @@ class StatelessService:
 
         return self._functions[fn_name](*args, **kwargs)
 
+    async def _try_connect(self, uri: str, ssl_context: Optional[ssl.SSLContext] = None,
+                           retries: int = 3) -> websockets.WebSocketClientProtocol:
+        try:
+            return await websockets.connect(uri, ssl=ssl_context)
+        except (OSError, ConnectionError, websockets.InvalidHandshake) as e:
+            if self._retry_strategy == RetryStrategy.NO_RETRY or retries == 0:
+                raise e
+            else:
+                print("An error occurred during WebSocket connection, retrying.")
+                if self._retry_strategy == RetryStrategy.RETRY_3_TIMES:
+                    retries -= 1
+
+                await asyncio.sleep(10e-3)  # Waiting 10 ms
+
+                return await self._try_connect(uri, ssl_context, retries=retries)
+
     async def call_remote_fn(self, fn_name: str, *args, **kwargs) -> Any:
         assert fn_name in self._functions, f"Function {fn_name} is not registered."
 
@@ -95,19 +127,26 @@ class StatelessService:
         else:
             ssl_context = None
 
-        async with websockets.connect(self._root_uri(), ssl=ssl_context) as ws:
-            serialized_args = dill.dumps((fn_name, args, kwargs), byref=True)
-            await ws.send(serialized_args)
-            message = await ws.recv()
-            try:
-                ok, result = dill.loads(message)
-            except AttributeError as e:
-                raise AttributeError("This error is likely due to different class names during "
-                                     "serialization and deserialization of function remote call response. "
-                                     "Check that the imports and names are identical in the function definition "
-                                     "context and in the function call context. For more information, "
-                                     "check Dill's documentation.") from e
-            if not ok:
-                raise result
-            else:
-                return result
+        ws = await self._try_connect(self._root_uri(), ssl_context=ssl_context)
+
+        serialized_args = dill.dumps((fn_name, args, kwargs), byref=True)
+
+        await ws.send(serialized_args)
+
+        message = await ws.recv()
+
+        await ws.close()
+
+        try:
+            ok, result = dill.loads(message)
+        except AttributeError as e:
+            raise AttributeError("This error is likely due to different class names during "
+                                 "serialization and deserialization of function remote call response. "
+                                 "Check that the imports and names are identical in the function definition "
+                                 "context and in the function call context. For more information, "
+                                 "check Dill's documentation.") from e
+
+        if not ok:
+            raise result
+        else:
+            return result

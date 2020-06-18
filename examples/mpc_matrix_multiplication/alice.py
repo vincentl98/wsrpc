@@ -11,12 +11,25 @@ import stephanie
 
 class AliceService(Service):
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__("localhost", 6789)
 
-        self.matrix = np.array([[1, 2],
-                                [3, 4]])
+        self._matrix = None
 
+        self.alpha = Future()
+        self.beta = Future()
+        self.daniel_shares = Future()
+        self.stephanie_shares = Future()
+
+        self.is_finished = Future()
+        self.is_finished.set_result(True)
+
+    async def set_matrix(self, matrix: np.ndarray) -> None:
+        await self.is_finished
+        self.reset()
+        self._matrix = matrix
+
+    def reset(self) -> None:
         self.alpha = Future()
         self.beta = Future()
         self.daniel_shares = Future()
@@ -24,7 +37,8 @@ class AliceService(Service):
 
     @rpc
     async def matrix_shape(self) -> Tuple[int, int]:
-        return self.matrix.shape
+        assert self._matrix is not None, "Cannot return matrix shape because it has not been set."
+        return self._matrix.shape
 
     @rpc
     async def set_daniel_shares(self, shares: np.ndarray) -> None:
@@ -39,8 +53,11 @@ class AliceService(Service):
     async def set_stephanie_shares(self, shares: np.ndarray) -> None:
         self.stephanie_shares.set_result(shares)  # a_1
 
-    async def z_0(self):
-        n, p_ = self.matrix.shape
+    async def matrix_multiplication_share(self) -> np.ndarray:
+        self.is_finished = Future()
+
+        assert self._matrix is not None, "Cannot generate matrix multiplication share because no matrix was set."
+        n, p_ = self._matrix.shape
         p, q = await stephanie.service.matrix_shape()
         assert p == p_
         print(f"n,p,q = {n},{p},{q}")
@@ -61,7 +78,7 @@ class AliceService(Service):
         for i in range(n):
             for j in range(q):
                 for k in range(p):
-                    a_0[i, j, k] = self.matrix[i, k] - r[i, j, k]
+                    a_0[i, j, k] = self._matrix[i, k] - r[i, j, k]
 
         for i in range(n):
             for j in range(q):
@@ -74,6 +91,9 @@ class AliceService(Service):
         shares = await self.alpha * await self.beta + \
                  await self.alpha * t + \
                  await self.beta * s + st
+
+        self.is_finished.set_result(True)
+
         return shares.sum(axis=2)
 
 
@@ -82,7 +102,11 @@ service = AliceService()
 
 async def main():
     await service.start()
-    await bob.service.set_alice_value(await service.z_0())
+    await service.set_matrix(np.array([[1, 2],
+                                         [3, 4]]))
+
+    share = await service.matrix_multiplication_share()
+    await bob.service.set_alice_value(share)
 
 
 if __name__ == "__main__":
