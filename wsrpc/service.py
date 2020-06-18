@@ -48,7 +48,7 @@ class Service:
 
     async def start(self) -> None:
         assert not self.is_started()
-        assert len(self._functions.keys()) > 0, "No function was registered. This is most likely a mistake."
+        assert len(self._functions.keys()) > 0, "Cannot start service because no function has been registered."
 
         if self._ssl_certificate_path is not None:
             ssl_context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)

@@ -11,7 +11,6 @@ service = Service("localhost", 6789)
 
 @rpc(service)
 async def set_daniel_shares(shares: Tuple[int, int, int]) -> None:
-    print(f"Received shares from Daniel: {shares}")
     s_0.set_result(shares[0])
     t_0.set_result(shares[1])
     st_0.set_result(shares[2])
@@ -29,21 +28,29 @@ async def set_alpha_beta(values: Tuple[int, int]) -> None:
 
 
 async def main():
-    a = 5
-    r = random.randint(0, 100)
-    a_0 = a - r
-    a_1 = r
+    a = 5  # Secret number here
+    alice_r = random.randint(0, 100)
+    a_0 = a - alice_r
+    a_1 = alice_r
 
-    await service.start()
+    # Setting up global variables that will be set during RPC calls to this machine
+    global b_0, s_0, t_0, st_0, alpha, beta
 
+    b_0 = Future()
+    s_0 = Future()
+    t_0 = Future()
+    st_0 = Future()
+    alpha = Future()
+    beta = Future()
+
+    await service.start()  # Starting the RPC server
+
+    # Actual algorithm:
     await stephanie.set_alice_share(a_1)
 
     alpha_0 = a_0 - await s_0
     beta_0 = await b_0 - await t_0
 
-    print(f"a_0 = {a_0}, b_0 = {await b_0}")
-
-    print(f"alpha_0 = {alpha_0}, beta_0 = {beta_0}")
     await stephanie.set_alpha_beta_shares((alpha_0, beta_0))
 
     z_0 = await alpha * await beta + await alpha * await t_0 + await beta * await s_0 + await st_0
@@ -51,13 +58,4 @@ async def main():
 
 
 if __name__ == "__main__":
-    b_0 = Future()
-    s_0 = Future()
-    t_0 = Future()
-    st_0 = Future()
-    alpha_1 = Future()
-    beta_1 = Future()
-    alpha = Future()
-    beta = Future()
-
     asyncio.get_event_loop().run_until_complete(main())
