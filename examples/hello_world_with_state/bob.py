@@ -5,7 +5,8 @@ from wsrpc import rpc, Service
 
 class BobService(Service):
 
-    def init_state(self) -> None:
+    def __init__(self):
+        super().__init__("localhost", 5678)
         self.messages_count = 0
 
     @rpc
@@ -14,7 +15,7 @@ class BobService(Service):
         print(f"Alice said: \"{message}\". Total: {self.messages_count} message(s).")
 
 
-service = BobService("localhost", 5678)
+service = BobService()
 
 
 async def main():
