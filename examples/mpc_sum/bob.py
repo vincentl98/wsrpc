@@ -6,7 +6,17 @@ import examples.mpc_sum.stephanie as stephanie
 
 async def main():
     alice_value = await alice.encrypted_value()  # This is a remote call
-    stephanie_value = await stephanie.encrypted_value()  # This is a remote call
+
+    ok = False
+    stephanie_value = 0
+    while ok is not True:
+        try:
+            stephanie_value = await stephanie.encrypted_value()  # This is a remote call
+            ok = True
+        except Exception as e:
+
+            ok = False
+
     print(f"Sum of Alice and Stephanie values: {alice_value + stephanie_value}")
 
 

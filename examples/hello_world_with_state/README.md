@@ -1,7 +1,7 @@
-# hello_world_class
+# Hello World with state
 
 This example implements a basic one-way message sending 
-service with a `ServiceState` object.
+service holding the count of received messages.
 
 ## Running
 

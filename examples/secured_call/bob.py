@@ -2,10 +2,10 @@ import asyncio
 import tensorflow as tf
 from asyncio import Future
 
-from wsrpc import rpc, Service
+from wsrpc import rpc, StatelessService
 
-service = Service("localhost", 6790,
-                  ssl_certificate_filename="localhost.pem")
+service = StatelessService("localhost", 6790,
+                           ssl_certificate_filename="localhost.pem")
 
 trusted_tokens = ["alice_token_123"]  # This is just an illustration. Tokens should never be stored in code.
 

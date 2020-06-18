@@ -14,8 +14,8 @@ async def main():
     alice_shares = (s_shares[0], t_shares[0], st_shares[0])
     stephanie_shares = (s_shares[1], t_shares[1], st_shares[1])
 
-    await alice.set_daniel_shares(alice_shares)
-    await stephanie.set_daniel_shares(stephanie_shares)
+    await alice.AliceService().set_daniel_shares(alice_shares)
+    await stephanie.StephanieService().set_daniel_shares(stephanie_shares)
 
 
 if __name__ == "__main__":

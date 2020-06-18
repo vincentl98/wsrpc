@@ -1,6 +1,7 @@
-# mpc_multiplication
+# mpc_multiplication_class
 
-This example implements a secret multiplication.
+This example implements a secret multiplication using 
+`StateService` objects.
 
 ## Running
 

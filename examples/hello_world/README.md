@@ -1,4 +1,4 @@
-# hello_world
+# Hello World example
 
 This example implements a basic one-way message sending 
 service.

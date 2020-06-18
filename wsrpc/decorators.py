@@ -1,12 +1,12 @@
 import inspect
 from typing import Callable, Any, Union
 
-from wsrpc.service import Service
+from wsrpc.stateless_service import StatelessService
 
 IS_REGISTERED = "_wsrpc_is_registered"
 
 
-def rpc(fn_or_service: Union[Callable, Service]):
+def rpc(fn_or_service: Union[Callable, StatelessService]) -> Callable:
     """ Mark a function as remotely callable.
     There are two different usages:
         - If used inside a `StateService`, use `@rpc` (returns a decorated function)
@@ -16,12 +16,12 @@ def rpc(fn_or_service: Union[Callable, Service]):
     if callable(fn_or_service):
         return _state_service_rpc(fn_or_service)  # returns a function
     else:
-        assert isinstance(fn_or_service, Service), f"Cannot decorate object `{fn_or_service}` because " \
+        assert isinstance(fn_or_service, StatelessService), f"Cannot decorate object `{fn_or_service}` because " \
                                                    f"it is not an instance or a subclass of `Service`."
         return _service_rpc(fn_or_service)  # returns a decorator
 
 
-def _service_rpc(service: Service):
+def _service_rpc(service: StatelessService) -> Callable[[Callable], Callable]:
     def decorator(fn: Callable):
         fn_name = fn.__name__
 
@@ -42,7 +42,7 @@ def _service_rpc(service: Service):
     return decorator
 
 
-def _state_service_rpc(fn: Callable):
+def _state_service_rpc(fn: Callable) -> Callable:
     fn_name = fn.__name__
 
     if not inspect.iscoroutinefunction(fn):

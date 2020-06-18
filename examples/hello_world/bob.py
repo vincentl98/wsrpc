@@ -1,9 +1,9 @@
 import asyncio
 from asyncio import Future
 
-from wsrpc import rpc, Service
+from wsrpc import rpc, StatelessService
 
-service = Service("localhost", 6790)
+service = StatelessService("localhost", 6790)
 
 
 @rpc(service)

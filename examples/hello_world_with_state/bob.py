@@ -2,10 +2,10 @@ import asyncio
 from asyncio import Future
 
 from wsrpc.decorators import rpc
-from wsrpc.state_service import StateService
+from wsrpc.service import Service
 
 
-class BobService(StateService):
+class BobService(Service):
 
     def init_state(self) -> None:
         self.messages_count = 0

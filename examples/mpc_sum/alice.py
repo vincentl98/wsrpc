@@ -2,11 +2,11 @@ import asyncio
 import random
 from asyncio import Future
 
-from wsrpc import rpc, Service
+from wsrpc import rpc, StatelessService
 
 import examples.mpc_sum.stephanie as stephanie
 
-service = Service("localhost", 6789)
+service = StatelessService("localhost", 6789)
 
 if __name__ == "__main__":
     a = 100

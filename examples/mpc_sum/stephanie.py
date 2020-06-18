@@ -3,9 +3,9 @@ from asyncio import Future
 from typing import Optional
 
 from wsrpc.decorators import rpc
-from wsrpc.service import Service
+from wsrpc.stateless_service import StatelessService
 
-service = Service("localhost", 6790)
+service = StatelessService("localhost", 6790)
 
 if __name__ == "__main__":
     b = 200

@@ -1,6 +1,6 @@
 import asyncio
 
-from examples.hello_world_class.bob import service as bob_service
+from examples.hello_world_with_state.bob import service as bob_service
 
 
 async def main():
