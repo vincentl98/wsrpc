@@ -15,7 +15,7 @@ class StephanieService(Service):
 
         self._matrix = None
 
-        self.alice_shares = Future()
+        self.alice_share = Future()
         self.alpha_0 = Future()
         self.beta_0 = Future()
         self.daniel_shares = Future()
@@ -32,7 +32,7 @@ class StephanieService(Service):
         self.alpha_0 = Future()
         self.beta_0 = Future()
         self.daniel_shares = Future()
-        self.alice_shares = Future()
+        self.alice_share = Future()
 
     @rpc
     async def matrix_shape(self) -> Tuple[int, int]:
@@ -44,8 +44,8 @@ class StephanieService(Service):
         self.daniel_shares.set_result(shares)
 
     @rpc
-    async def set_alice_shares(self, shares: np.ndarray) -> None:
-        self.alice_shares.set_result(shares)  # a_1
+    async def set_alice_share(self, share: int) -> None:
+        self.alice_share.set_result(share)  # a_1
 
     @rpc
     async def set_alpha_beta_shares(self, alpha_shares: np.ndarray, beta_shares: np.ndarray) -> None:
@@ -61,9 +61,9 @@ class StephanieService(Service):
         assert p == p_
         print(f"n,p,q = {n},{p},{q}")
 
-        r = np.random.randint(0, 100, n * q * p).reshape((n, q, p))
+        r = np.random.randint(0, high=100)
 
-        await alice.service.set_stephanie_shares(r)
+        await alice.service.set_stephanie_share(r)
 
         print(f"stephanie shares for alice : {r}")
 
@@ -75,9 +75,9 @@ class StephanieService(Service):
         for i in range(n):
             for j in range(q):
                 for k in range(p):
-                    b_1[i, j, k] = self._matrix[k, j] - r[i, j, k]
+                    b_1[i, j, k] = self._matrix[k, j] - r
 
-        alpha_1 = await self.alice_shares - s
+        alpha_1 = await self.alice_share - s
         beta_1 = b_1 - t
 
         alpha = await self.alpha_0 + alpha_1
@@ -97,8 +97,8 @@ service = StephanieService()
 
 async def main():
     await service.start()
-    await service.set_matrix(np.array([[1, 2],
-                                       [3, 4]]))
+    await service.set_matrix(np.array([[1, 0],
+                                       [0, 1]]))
     share = await service.matrix_multiplication_share()
     await bob.service.set_stephanie_value(share)
 

@@ -19,7 +19,7 @@ class AliceService(Service):
         self.alpha = Future()
         self.beta = Future()
         self.daniel_shares = Future()
-        self.stephanie_shares = Future()
+        self.stephanie_share = Future()
 
         self.is_finished = Future()
         self.is_finished.set_result(True)
@@ -33,7 +33,7 @@ class AliceService(Service):
         self.alpha = Future()
         self.beta = Future()
         self.daniel_shares = Future()
-        self.stephanie_shares = Future()
+        self.stephanie_share = Future()
 
     @rpc
     async def matrix_shape(self) -> Tuple[int, int]:
@@ -50,8 +50,8 @@ class AliceService(Service):
         self.beta.set_result(beta)
 
     @rpc
-    async def set_stephanie_shares(self, shares: np.ndarray) -> None:
-        self.stephanie_shares.set_result(shares)  # a_1
+    async def set_stephanie_share(self, share: int) -> None:
+        self.stephanie_share.set_result(share)  # a_1
 
     async def matrix_multiplication_share(self) -> np.ndarray:
         self.is_finished = Future()
@@ -62,10 +62,10 @@ class AliceService(Service):
         assert p == p_
         print(f"n,p,q = {n},{p},{q}")
 
-        r = np.random.randint(0, 100, n * q * p).reshape((n, q, p))
+        r = np.random.randint(0, high=100)
 
         print(f"alice shares for stephanie = {r}")
-        await stephanie.service.set_alice_shares(r)
+        await stephanie.service.set_alice_share(r)
 
         s, t, st = await self.daniel_shares
 
@@ -78,13 +78,13 @@ class AliceService(Service):
         for i in range(n):
             for j in range(q):
                 for k in range(p):
-                    a_0[i, j, k] = self._matrix[i, k] - r[i, j, k]
+                    a_0[i, j, k] = self._matrix[i, k] - r
 
         for i in range(n):
             for j in range(q):
                 for k in range(p):
                     alpha_shares[i, j, k] = a_0[i, j, k] - s
-                    beta_shares[i, j, k] = (await self.stephanie_shares)[i, j, k] - t
+                    beta_shares[i, j, k] = await self.stephanie_share - t
 
         await stephanie.service.set_alpha_beta_shares(alpha_shares, beta_shares)
 
@@ -103,7 +103,7 @@ service = AliceService()
 async def main():
     await service.start()
     await service.set_matrix(np.array([[1, 2],
-                                         [3, 4]]))
+                                       [3, 4]]))
 
     share = await service.matrix_multiplication_share()
     await bob.service.set_alice_value(share)
